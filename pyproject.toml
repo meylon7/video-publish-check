@@ -1,0 +1,31 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "video-publish-check"
+version = "0.1.0"
+description = "Pre publish QA for rendered videos on top of claude-eyes: narration pace, silences, loudness, script match, cuts inside words, soft transitions, and a numbered fix list with timestamps. Hebrew first."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{ name = "Moshe Eylon", email = "meylon@gmail.com" }]
+dependencies = [
+    "numpy",
+    "claude-eyes @ git+https://github.com/moritzkremb/claude-eyes",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[project.scripts]
+vpc = "vpc.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/vpc"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"skills/video-publish-check/SKILL.md" = "vpc/skill/SKILL.md"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
