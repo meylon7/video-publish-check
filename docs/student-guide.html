@@ -49,10 +49,9 @@ li{margin-bottom:6px}
 .steps>li::before{content:counter(s);width:40px;height:40px;border-radius:50%;background:var(--accent);color:#5D5544;font-weight:800;font-size:1.15rem;display:grid;place-items:center}
 .steps h4{margin:4px 0 6px;font-size:1.1rem;font-weight:700}
 .steps p{margin-bottom:8px}
-.code{position:relative;direction:ltr;text-align:left;background:var(--code-bg);color:var(--code-fg);border-radius:10px;padding:14px 92px 14px 16px;font-family:var(--font);font-weight:500;font-size:.98rem;line-height:1.55;white-space:pre-wrap;word-break:break-word;margin:8px 0 12px;max-width:none}
-.code.he{direction:rtl;text-align:right;padding:14px 16px 14px 92px}
-.copy{position:absolute;top:8px;left:8px;font-family:var(--font);font-size:.82rem;font-weight:700;background:#5D5544;color:#FFFFFF;border:0;border-radius:8px;padding:5px 10px;cursor:pointer}
-.code.he .copy{left:auto;right:8px}
+.code{display:flex;flex-direction:column;align-items:flex-start;gap:10px;direction:ltr;text-align:left;background:var(--code-bg);color:var(--code-fg);border-radius:10px;padding:12px 16px 14px;font-family:var(--font);font-weight:500;font-size:.98rem;line-height:1.55;white-space:pre-wrap;word-break:break-word;margin:8px 0 12px;max-width:none}
+.code.he{direction:rtl;text-align:right}
+.copy{font-family:var(--font);font-size:.82rem;font-weight:700;background:#5D5544;color:#FFFFFF;border:0;border-radius:8px;padding:5px 12px;cursor:pointer;white-space:normal}
 code{font-family:var(--font);font-weight:600;background:var(--soft);color:#5D5544;padding:1px 6px;border-radius:6px;font-size:.95em}
 table{border-collapse:collapse;width:100%;margin:10px 0 18px;font-size:.98rem}
 .tablewrap{overflow-x:auto;max-width:100%}
@@ -68,7 +67,7 @@ dl{max-width:72ch;margin:0}
 dt{font-weight:800;margin-top:14px}
 dd{margin:2px 0 0}
 .foot{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:.9rem}
-@media (max-width:520px){body{font-size:16px}header h1{font-size:1.6rem}.code{padding-right:16px;padding-top:44px}.code.he{padding-left:16px;padding-top:44px}}
+@media (max-width:520px){body{font-size:16px}header h1{font-size:1.6rem}}
 @media (prefers-reduced-motion: no-preference){nav.tabs button,nav.sub button{transition:background .15s}}
 </style>
 
