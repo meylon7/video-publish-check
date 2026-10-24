@@ -1,0 +1,356 @@
+<title>בדיקת סרטון לפני פרסום</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800&display=swap">
+<style>
+/* Layout: one solid header, tab bar on top, one panel per screen. Brand palette only, Heebo only. */
+:root{
+  --bg:#FFFFFF; --fg:#5D5544; --muted:#B4AD95; --accent:#FFB52E; --soft:#FFDE98; --cool:#ADB8D6;
+  --code-bg:#FFDE98; --code-fg:#5D5544; --panel:#FFFFFF; --line:#B4AD95;
+  --font:"Heebo",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#5D5544; --fg:#FFFFFF; --muted:#B4AD95; --accent:#FFB52E; --soft:#FFDE98; --cool:#ADB8D6;
+    --code-bg:#FFFFFF; --code-fg:#5D5544; --panel:#5D5544; --line:#B4AD95; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#5D5544; --fg:#FFFFFF; --muted:#B4AD95; --accent:#FFB52E; --soft:#FFDE98; --cool:#ADB8D6;
+  --code-bg:#FFFFFF; --code-fg:#5D5544; --panel:#5D5544; --line:#B4AD95; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:17px;line-height:1.65;direction:rtl}
+.wrap{max-width:980px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+header{position:relative;background:var(--bg);border-bottom:3px solid var(--accent);padding-block:28px 18px}
+header h1{font-size:2rem;font-weight:800;margin:0 0 6px;text-wrap:balance;line-height:1.2}
+header p{margin:0;color:var(--muted);font-size:1.05rem}
+.eyebrow{display:inline-block;font-size:.8rem;letter-spacing:.08em;font-weight:700;color:var(--fg);background:var(--soft);padding:2px 10px;border-radius:999px;margin-bottom:12px}
+nav.tabs{display:flex;flex-wrap:wrap;gap:8px;padding-block:16px;border-bottom:1px solid var(--line)}
+nav.tabs button, nav.sub button{font-family:var(--font);font-size:1rem;font-weight:500;color:var(--fg);background:var(--panel);border:1.5px solid var(--line);border-radius:999px;padding:8px 16px;cursor:pointer;min-width:0}
+nav.tabs button[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:#5D5544;font-weight:700}
+nav.sub{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
+nav.sub button{font-size:.92rem;padding:6px 14px}
+nav.sub button[aria-selected="true"]{background:var(--soft);border-color:var(--soft);color:#5D5544;font-weight:700}
+button:focus-visible{outline:3px solid var(--cool);outline-offset:2px}
+.panel{padding-block:26px 8px}
+.panel[hidden]{display:none}
+h2{font-size:1.55rem;font-weight:800;margin:0 0 14px;text-wrap:balance}
+h3{font-size:1.15rem;font-weight:700;margin:26px 0 8px}
+p{margin:0 0 12px;max-width:68ch}
+ul,ol{margin:0 0 14px;padding-right:22px;max-width:68ch}
+li{margin-bottom:6px}
+.term{font-weight:700;color:var(--fg);border-bottom:2px solid var(--accent)}
+.note{background:var(--soft);color:#5D5544;border-radius:12px;padding:14px 18px;margin:16px 0;max-width:72ch}
+.note strong{font-weight:800}
+.cool{background:var(--cool);color:#5D5544}
+.steps{counter-reset:s;list-style:none;padding:0;max-width:none}
+.steps>li{counter-increment:s;display:grid;grid-template-columns:44px minmax(0,1fr);gap:14px;padding:16px 0;border-top:1px solid var(--line)}
+.steps>li:last-child{border-bottom:1px solid var(--line)}
+.steps>li::before{content:counter(s);width:40px;height:40px;border-radius:50%;background:var(--accent);color:#5D5544;font-weight:800;font-size:1.15rem;display:grid;place-items:center}
+.steps h4{margin:4px 0 6px;font-size:1.1rem;font-weight:700}
+.steps p{margin-bottom:8px}
+.code{position:relative;direction:ltr;text-align:left;background:var(--code-bg);color:var(--code-fg);border-radius:10px;padding:14px 92px 14px 16px;font-family:var(--font);font-weight:500;font-size:.98rem;line-height:1.55;white-space:pre-wrap;word-break:break-word;margin:8px 0 12px;max-width:none}
+.code.he{direction:rtl;text-align:right;padding:14px 16px 14px 92px}
+.copy{position:absolute;top:8px;left:8px;font-family:var(--font);font-size:.82rem;font-weight:700;background:#5D5544;color:#FFFFFF;border:0;border-radius:8px;padding:5px 10px;cursor:pointer}
+.code.he .copy{left:auto;right:8px}
+code{font-family:var(--font);font-weight:600;background:var(--soft);color:#5D5544;padding:1px 6px;border-radius:6px;font-size:.95em}
+table{border-collapse:collapse;width:100%;margin:10px 0 18px;font-size:.98rem}
+.tablewrap{overflow-x:auto;max-width:100%}
+th,td{text-align:right;vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--line)}
+th{font-weight:800;background:var(--soft);color:#5D5544}
+td code{white-space:nowrap}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin:12px 0 18px}
+.card{border:1.5px solid var(--line);border-radius:14px;padding:16px 18px;min-width:0}
+.card h4{margin:0 0 8px;font-size:1.05rem;font-weight:800}
+.card p{margin:0;font-size:.97rem}
+.report{direction:rtl;background:var(--code-bg);color:var(--code-fg);border-radius:10px;padding:16px 18px;white-space:pre-wrap;font-family:var(--font);font-size:.95rem;line-height:1.6;margin:8px 0 16px}
+dl{max-width:72ch;margin:0}
+dt{font-weight:800;margin-top:14px}
+dd{margin:2px 0 0}
+.foot{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:.9rem}
+@media (max-width:520px){body{font-size:16px}header h1{font-size:1.6rem}.code{padding-right:16px;padding-top:44px}.code.he{padding-left:16px;padding-top:44px}}
+@media (prefers-reduced-motion: no-preference){nav.tabs button,nav.sub button{transition:background .15s}}
+</style>
+
+<div class="wrap">
+<header>
+  <span class="eyebrow">סטודיו אילון · כלי לקורס הווידאו</span>
+  <h1>בדיקת סרטון לפני פרסום</h1>
+  <p>איך מתקינים את הכלי שבודק את הסרטון שלך במקומך, ואיך קוראים את מה שהוא מחזיר</p>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="נושאים">
+  <button role="tab" aria-selected="true" data-target="t-what">מה זה</button>
+  <button role="tab" aria-selected="false" data-target="t-install">התקנה</button>
+  <button role="tab" aria-selected="false" data-target="t-use">שימוש</button>
+  <button role="tab" aria-selected="false" data-target="t-report">קריאת הדוח</button>
+  <button role="tab" aria-selected="false" data-target="t-fix">תקלות</button>
+  <button role="tab" aria-selected="false" data-target="t-terms">מילון</button>
+</nav>
+
+<!-- ============ מה זה ============ -->
+<section class="panel" id="t-what" role="tabpanel">
+  <h2>הסרטון מוכן. לפני שמעלים, מישהו צריך לצפות בו ברצינות.</h2>
+  <p>אחרי שעות של עבודה על סרטון, קשה לראות בו טעויות. הקריינות רצה מהר מדי בדקה השלישית, יש שנייה וחצי של שקט אחרי מעבר סצנה, משפט שלם מהתסריט נשכח בהקלטה, והמוזיקה חזקה מדי ביחס לקול. את כל אלה מגלים בדרך כלל אחרי שהסרטון כבר באוויר.</p>
+  <p>הכלי שתתקינו כאן עושה את הצפייה המכנית הזאת בשבילכם. אתם נותנים לו את קובץ הווידאו הסופי ואת התסריט, והוא מחזיר רשימת תיקונים ממוספרת, כל תיקון עם הדקה והשנייה שבהן הוא נמצא.</p>
+
+  <h3>מה הוא בודק</h3>
+  <div class="grid2">
+    <div class="card"><h4>קצב הקריינות</h4><p>כמה מילים נאמרות בדקה, בכל קטע של 30 שניות בנפרד. קטע מהיר מדי מתגלה גם כשהממוצע של כל הסרטון נראה בסדר.</p></div>
+    <div class="card"><h4>שקטים</h4><p>כל מקום שבו אין דיבור יותר מ 2.5 שניות. חלק מהשקטים מכוונים (מעבר סצנה עם מוזיקה), חלק הם חורים.</p></div>
+    <div class="card"><h4>התאמה לתסריט</h4><p>משווה מילה במילה בין מה שנאמר בפועל לבין קובץ התסריט, ומוצא משפטים שחסרים או שנוספו.</p></div>
+    <div class="card"><h4>עוצמת הסאונד</h4><p>האם הסרטון כולו חזק או חלש מדי לעומת מה שיוטיוב מצפה לו, והאם יש שיאים שעלולים להישמע מעוותים.</p></div>
+    <div class="card"><h4>חיתוכים באמצע מילה</h4><p>מקומות שבהם מעבר בין קליפים נופל בדיוק באמצע מילה מדוברת. זה מורגש כקפיצה לא נעימה.</p></div>
+    <div class="card"><h4>מעברים רכים</h4><p>מעברים שבהם תמונה אחת נמסה לתוך השנייה. הכלי מוצא אותם כדי שתבדקו שהקריינות לא נופלת באמצע המעבר.</p></div>
+  </div>
+
+  <h3>מה הוא לא רואה</h3>
+  <p>הכלי מסתכל על דגימות של הסרטון, לא על כל פריים. הוא לא ישפוט אם דמות נראית טבעית, אם יש לה שש אצבעות, או אם התנועה בקליפ חלקה. את זה רק אתם רואים. הוא גם לא שומע טון דיבור או איכות של מוזיקה, רק את העוצמה שלה.</p>
+  <div class="note"><strong>המשפט החשוב במדריך:</strong> הכלי לא מחליף את הצפייה שלכם. הוא מוריד ממנה את החלק המשעמם והמדויק (מספרים, זמנים, מילים חסרות) כדי שהצפייה שלכם תתמקד במה שרק עין אנושית תופסת.</div>
+</section>
+
+<!-- ============ התקנה ============ -->
+<section class="panel" id="t-install" role="tabpanel" hidden>
+  <h2>התקנה: פעם אחת במחשב</h2>
+  <p>ההתקנה נעשית דרך <span class="term">Claude Code</span>, התוכנה שאתם כבר עובדים איתה בקורס: חלון שבו כותבים לקלוד בשפה חופשית והוא מבצע פעולות במחשב שלכם. אתם לא צריכים להקליד פקודות בעצמכם. אתם מדביקים לקלוד הודעה, והוא מתקין.</p>
+
+  <nav class="sub" role="tablist" aria-label="שלבי התקנה">
+    <button role="tab" aria-selected="true" data-target="i-prep">לפני שמתחילים</button>
+    <button role="tab" aria-selected="false" data-target="i-claude">התקנה דרך קלוד</button>
+    <button role="tab" aria-selected="false" data-target="i-key">מפתח ElevenLabs</button>
+    <button role="tab" aria-selected="false" data-target="i-check">בדיקה שהכל עובד</button>
+  </nav>
+
+  <div class="panel" id="i-prep" role="tabpanel">
+    <h3>מה צריך שיהיה</h3>
+    <ol class="steps">
+      <li><div><h4>Claude Code מותקן ועובד</h4><p>אם אתם מפעילים אותו בקורס, יש לכם אותו. אם לא, חזרו לשיעור ההתקנה של הקורס לפני שממשיכים.</p></div></li>
+      <li><div><h4>מחשב Mac או Windows עם חיבור לאינטרנט</h4><p>ההתקנה מורידה כמה תוכנות עזר ומודל אחד גדול (כ 3 ג'יגה). הזמן תלוי בחיבור, בדרך כלל 10 עד 20 דקות. את הזמן הזה עושים פעם אחת בלבד.</p></div></li>
+      <li><div><h4>תיקיית פרויקט של סרטון</h4><p>לא חובה להתקנה, אבל כן לבדיקה הראשונה: תיקייה עם קובץ וידאו סופי אחד (למשל <code>final.mp4</code>) וקובץ התסריט שלו (<code>script.md</code>). אם עבדתם לפי שלבי הקורס, התיקייה הזאת כבר קיימת.</p></div></li>
+    </ol>
+    <div class="note cool"><strong>מה זה "מודל" ולמה הוא גדול?</strong> כדי להבין מה נאמר בסרטון, הכלי מפעיל תוכנת תמלול בשם <span class="term">whisper</span> (ויספר, "לחישה"). היא צריכה קובץ ידע שנקרא מודל. יש מודלים קטנים ומהירים ומודלים גדולים ומדויקים. בעברית המודלים הקטנים עושים שגיאות רבות, לכן אנחנו מורידים את הגדול, <code>large-v3</code>.</div>
+  </div>
+
+  <div class="panel" id="i-claude" role="tabpanel" hidden>
+    <h3>הדביקו לקלוד את ההודעה הזאת</h3>
+    <p>פתחו את Claude Code בכל תיקייה (זה לא משנה איזו), העתיקו את ההודעה הבאה והדביקו אותה בחלון השיחה:</p>
+    <div class="code he"><button class="copy" type="button">העתקה</button>התקן את הכלי video-publish-check מהכתובת https://github.com/meylon7/video-publish-check לפי ההוראות בקובץ README של הריפו. אחרי ההתקנה:
+1. הרץ eyes setup --fix כדי להתקין את תוכנות העזר.
+2. הרץ eyes setup --download-model large-v3 כדי להוריד את מודל התמלול לעברית.
+3. הרץ vpc install-skill כדי להתקין את הסקיל.
+4. הרץ eyes setup ו vpc --version והראה לי את הפלט.
+אם משהו דורש סיסמה או החלטה שלי, עצור ותסביר לי מה לעשות.</div>
+    <p>קלוד יעבוד כמה דקות. הוא עשוי לשאול אותך שאלות (למשל אישור להתקנה). ענו "כן" או "אשר". בסוף הוא יראה לכם פלט שבו מופיעה המילה <code>READY</code> (מוכן) ומספר גרסה של <code>vpc</code>.</p>
+
+    <h3>מה בעצם הותקן</h3>
+    <div class="tablewrap"><table>
+      <tr><th>שם</th><th>מה זה</th><th>למה צריך</th></tr>
+      <tr><td><code>eyes</code></td><td>כלי שנותן לקלוד "עיניים" לסרטון: הוא מפרק אותו לתמלול, לתמונות ולמספרים שקלוד יודע לקרוא.</td><td>קלוד לא יכול לפתוח קובץ וידאו בעצמו. eyes עושה את זה בשבילו.</td></tr>
+      <tr><td><code>vpc</code></td><td>קיצור של video publish check. הכלי שלנו, שיושב על eyes ומחליט מה בסדר ומה לא.</td><td>eyes מודד. vpc שופט ומחזיר רשימת תיקונים.</td></tr>
+      <tr><td>סקיל</td><td>קובץ הוראות שקלוד קורא כשאתם מבקשים לבדוק סרטון. נשמר בתיקייה <code>.claude/skills</code> בתיקיית הבית שלכם.</td><td>בזכותו מספיק להגיד לקלוד "תבדוק את הרנדר" והוא יודע מה לעשות.</td></tr>
+      <tr><td><code>ffmpeg</code></td><td>תוכנת עזר ותיקה לעיבוד וידאו ואודיו.</td><td>כל פעולה על הסרטון עוברת דרכה.</td></tr>
+      <tr><td>whisper + מודל</td><td>תוכנת תמלול שרצה במחשב שלכם.</td><td>הופכת את הקריינות לטקסט עם זמן לכל מילה.</td></tr>
+    </table></div>
+    <div class="note"><strong>פרטיות:</strong> הכל רץ במחשב שלכם. הסרטון לא נשלח לשום מקום, אלא אם תבחרו בתמלול של ElevenLabs בלשונית הבאה, ואז נשלח רק פס הקול.</div>
+  </div>
+
+  <div class="panel" id="i-key" role="tabpanel" hidden>
+    <h3>מומלץ: תמלול דרך ElevenLabs</h3>
+    <p>אתם כבר משתמשים ב <span class="term">ElevenLabs</span> בקורס כדי להקליט קריינות. לאותה חברה יש גם שירות תמלול מצוין בעברית. אם תיתנו לכלי את <span class="term">מפתח ה API</span> שלכם (מחרוזת אותיות ומספרים שמזהה את החשבון שלכם מול השירות), הוא יעדיף את התמלול הזה על פני whisper, והתוצאה בעברית תהיה מדויקת יותר.</p>
+    <ol class="steps">
+      <li><div><h4>מצאו את המפתח</h4><p>באתר ElevenLabs, בתפריט החשבון, יש עמוד בשם API Keys. צרו מפתח חדש או העתיקו קיים. המפתח נראה כמו <code>sk_</code> ואחריו אותיות ומספרים.</p></div></li>
+      <li><div><h4>צרו קובץ בשם <code>.env</code> בתיקיית הפרויקט</h4><p>זה קובץ טקסט רגיל ששמו מתחיל בנקודה. בתוכו שורה אחת. הכי פשוט לבקש מקלוד:</p>
+      <div class="code he"><button class="copy" type="button">העתקה</button>צור בתיקייה הזאת קובץ בשם .env עם השורה הבאה בלבד (החלף את הערך במפתח שלי):
+ELEVENLABS_API_KEY=כאן_המפתח_שלך</div>
+      <p>השם <code>.env</code> הוא מוסכמה: קבצים כאלה מחזיקים מפתחות וסודות, ותוכנות יודעות לחפש אותם. הנקודה בתחילת השם גורמת לקובץ להיות מוסתר בסייר הקבצים, וזה בסדר.</p></div></li>
+      <li><div><h4>זהו</h4><p>מהרגע שהקובץ קיים בתיקיית הפרויקט, הכלי ישתמש ב ElevenLabs לבד. אין צורך להגיד לו.</p></div></li>
+    </ol>
+    <div class="note cool"><strong>בלי מפתח זה גם עובד.</strong> אז התמלול נעשה עם whisper במחשב. עם המודל הגדול שהורדתם התוצאה סבירה, רק איטית יותר (סרטון של 10 דקות יכול לקחת 5 עד 10 דקות תמלול במחשב בינוני).</div>
+  </div>
+
+  <div class="panel" id="i-check" role="tabpanel" hidden>
+    <h3>בדיקה שהכל עובד</h3>
+    <p>פתחו את Claude Code בתיקייה של סרטון שכבר סיימתם (עם קובץ וידאו וקובץ תסריט), והדביקו:</p>
+    <div class="code he"><button class="copy" type="button">העתקה</button>תבדוק את הרנדר לפני שאני מעלה. הקובץ הוא final.mp4 והתסריט הוא script.md.</div>
+    <p>החליפו את שמות הקבצים בשמות האמיתיים שלכם. אם הכל תקין, קלוד יגיד שהוא מאנדקס את הסרטון, יעבוד דקה עד כמה דקות (תלוי באורך), ויחזיר רשימת תיקונים. הוא גם ישמור קובץ בשם <code>publish-check.md</code> ליד הסרטון.</p>
+    <p>אם במקום זה הופיעה שגיאה, עברו ללשונית "תקלות".</p>
+    <div class="note"><strong>מה זה "רנדר"?</strong> המילה שבה עורכים קוראים לקובץ הווידאו הסופי שיצא מתוכנת העריכה, אחרי שכל הקליפים, הקריינות והמוזיקה אוחדו לקובץ אחד. כשאומרים "הרנדר" מתכוונים לקובץ הזה.</div>
+  </div>
+</section>
+
+<!-- ============ שימוש ============ -->
+<section class="panel" id="t-use" role="tabpanel" hidden>
+  <h2>שימוש: בכל פעם שסרטון מוכן</h2>
+  <p>הכלי נכנס לתהליך העבודה שלכם בשלב אחד קבוע: <strong>אחרי שהרנדר הסופי יצא, לפני שמעלים אותו</strong>. לא באמצע העריכה.</p>
+
+  <h3>הפעולה</h3>
+  <ol class="steps">
+    <li><div><h4>פתחו את Claude Code בתיקיית הפרויקט של הסרטון</h4><p>זו התיקייה שבה נמצאים קובץ הווידאו הסופי וקובץ התסריט. חשוב לפתוח דווקא שם, כי קלוד מחפש את התסריט ואת קובץ <code>.env</code> בתיקייה הנוכחית.</p></div></li>
+    <li><div><h4>בקשו בדיקה</h4><p>בשפה חופשית:</p>
+    <div class="code he"><button class="copy" type="button">העתקה</button>תבדוק את הרנדר לפני שאני מעלה. הקובץ final.mp4, התסריט script.md.</div>
+    <p>או בפקודה קצרה, אם אתם אוהבים פקודות:</p>
+    <div class="code"><button class="copy" type="button">העתקה</button>/video-publish-check final.mp4</div></div></li>
+    <li><div><h4>חכו</h4><p>בפעם הראשונה על סרטון מסוים: כחצי דקה לסרטון קצר, כמה דקות לסרטון של 10 דקות ומעלה. אם תבקשו בדיקה חוזרת על אותו קובץ, זה מיידי.</p></div></li>
+    <li><div><h4>קראו את רשימת התיקונים</h4><p>קלוד יציג אותה בשיחה וגם ישמור אותה בקובץ <code>publish-check.md</code> ליד הסרטון. בלשונית "קריאת הדוח" מוסבר כל סוג של ממצא.</p></div></li>
+    <li><div><h4>תקנו, רנדרו מחדש, בדקו שוב</h4><p>אחרי תיקונים מייצאים קובץ חדש ומבקשים בדיקה נוספת. הסרטון מוכן כשרשימת התיקונים ריקה או כשכל מה שנשאר בה הוא החלטה מודעת שלכם.</p></div></li>
+  </ol>
+
+  <h3>דברים שאפשר לבקש מקלוד תוך כדי</h3>
+  <div class="tablewrap"><table>
+    <tr><th>מה אתם רוצים</th><th>מה להגיד</th></tr>
+    <tr><td>שמות שהקריינות מזכירה ייכתבו נכון בתמלול (מותג, מוצר, שם פרטי)</td><td>"המילון: סטודיו אילון, קלוד, פלואו"</td></tr>
+    <tr><td>סרטון סיפורי איטי, שבו 150 מילים בדקה זה כבר מהר</td><td>"קצב מקסימלי 140 מילים לדקה"</td></tr>
+    <tr><td>סרטון הסבר קצבי שבו 165 זה בסדר</td><td>"קצב מקסימלי 170"</td></tr>
+    <tr><td>לדעת אם סרטון שלכם דומה בקצב לסרטון רפרנס שאתם אוהבים</td><td>"השווה את הרנדר לסרטון הרפרנס reference.mp4"</td></tr>
+    <tr><td>לראות בעיניים רגע מסוים</td><td>"תראה לי את הפריים ב 3:41" או "תראה לי מה קורה בשנייה סביב 6:05"</td></tr>
+  </table></div>
+
+  <div class="note"><strong>טיפ על התסריט:</strong> הבדיקה מול התסריט עובדת כשקובץ <code>script.md</code> מכיל את טקסט הקריינות כפי שהקלטתם אותו. אם שיניתם משפטים בזמן ההקלטה ולא עדכנתם את הקובץ, הכלי ידווח על "נאמר אבל לא בתסריט". זה לא טעות שלו, זו הזדמנות לעדכן את התסריט.</div>
+</section>
+
+<!-- ============ קריאת הדוח ============ -->
+<section class="panel" id="t-report" role="tabpanel" hidden>
+  <h2>קריאת הדוח</h2>
+  <p>כך נראה דוח טיפוסי. שלושה חלקים: מה לתקן, מה עבר, ומה הכלי לא בדק.</p>
+  <div class="report"># בדיקה לפני פרסום: final.mp4
+אורך: 11:42 | מילים לדקה: 151 | LUFS: -17.8 | חיתוכים: 64 | מעברים רכים: 9 | תמלול: elevenlabs
+
+## תיקונים (לפי סדר זמן)
+1. [0:00] עוצמה משולבת -17.8 LUFS, יעד -14 → לנרמל את המיקס (loudnorm) לפני יצוא
+2. [1:12] קריינות מהירה: 178 מילים לדקה בחלון של 30 שניות → להאט את ההקלטה או לקצר את הטקסט
+3. [3:41] שקט של 4.2 שניות → לבדוק בפריים: מעבר מכוון או חור 👁
+4. [6:05] חיתוך באמצע המילה 'הסטודיו' → להזיז את החיתוך לגבול מילה 👁
+5. [9:30] בתסריט אבל לא נאמר: "ועכשיו לחלק החשוב באמת" → להשלים קריינות או לעדכן תסריט
+
+## עבר בהצלחה
+- 64 חיתוכים, אף אחד לא נופל בתוך מילה (חוץ מהמסומן)
+- התמלול תואם לתסריט (דמיון 97%)
+
+## לא נבדק
+- איכות הקליפים עצמם (אצבעות, פנים, תנועה לא טבעית): דורש צפייה אנושית</div>
+
+  <h3>איך לקרוא כל שורה</h3>
+  <p>כל שורת תיקון בנויה אותו דבר: <strong>[זמן] מה הבעיה → מה לעשות</strong>. הזמן הוא דקה:שנייה בסרטון. פותחים את הסרטון בנקודה הזאת ומסתכלים.</p>
+  <p>הסימן 👁 אומר: הכלי מצא משהו חשוד אבל לא יכול להכריע לבד. קלוד אמור כבר לבדוק את הפריימים האלה בעצמו לפני שהוא מציג לכם את הרשימה הסופית, אבל אם הסימן עדיין שם, תסתכלו בעצמכם.</p>
+
+  <h3>סוגי הממצאים ומה עושים איתם</h3>
+  <div class="tablewrap"><table>
+    <tr><th>ממצא</th><th>מה זה אומר</th><th>מה עושים</th></tr>
+    <tr><td>קריינות מהירה</td><td>בקטע של 30 שניות נאמרו יותר מ 160 מילים בדקה. הצופה לא מספיק לעבד.</td><td>מקליטים מחדש את הקטע ב ElevenLabs עם מהירות נמוכה יותר, או מקצרים את הטקסט בקטע הזה ומקליטים שוב.</td></tr>
+    <tr><td>קריינות איטית</td><td>פחות מ 110 מילים בדקה. לפעמים זה מכוון (רגע דרמטי), לפעמים זו גרירה.</td><td>מאזינים לקטע. אם הוא מרגיש איטי, מקצרים שקטים או מעלים מעט את המהירות.</td></tr>
+    <tr><td>שקט</td><td>יותר מ 2.5 שניות בלי דיבור.</td><td>שקט עם מוזיקה בזמן מעבר סצנה זה בסדר. שקט על תמונה סטטית בלי כלום זה חור: מקצרים את הקליפ או מוסיפים קריינות.</td></tr>
+    <tr><td>חיתוך באמצע מילה</td><td>המעבר בין שני קליפים נופל בדיוק כשמילה נאמרת.</td><td>בתוכנת העריכה מזיזים את נקודת החיתוך כמה פריימים קדימה או אחורה, אל הרווח שבין מילים.</td></tr>
+    <tr><td>מעבר רך</td><td>מעבר שבו תמונה נמסה לתוך תמונה. הכלי מציין אותו כדי שתבדקו שהוא מכוון.</td><td>אם התכוונתם אליו, מתעלמים. אם הקריינות אומרת משהו חשוב בדיוק באמצעו, שוקלים להזיז אותו.</td></tr>
+    <tr><td>בתסריט אבל לא נאמר</td><td>משפט שקיים בקובץ התסריט ולא נשמע בסרטון.</td><td>אם המשפט חשוב, מקליטים אותו ומוסיפים. אם ויתרתם עליו בכוונה, מוחקים אותו מהתסריט כדי שהדוח הבא יהיה נקי.</td></tr>
+    <tr><td>נאמר אבל לא בתסריט</td><td>משפט שנשמע בסרטון ולא קיים בקובץ.</td><td>בדרך כלל אלתור בהקלטה. אם הוא טוב, מעדכנים את התסריט. אם לא, מקליטים לפי התסריט.</td></tr>
+    <tr><td>עוצמה משולבת (LUFS)</td><td>מדד לעוצמה הממוצעת של כל הסרטון. יוטיוב מכוון ל 14 מינוס. סרטון חלש יותר יישמע שקט לעומת סרטונים אחרים.</td><td>מבקשים מקלוד: "תנרמל את העוצמה של הרנדר ל 14 LUFS מינוס". הוא יעשה זאת עם ffmpeg בלי לפגוע בתמונה.</td></tr>
+    <tr><td>שיא אמיתי (dBTP)</td><td>הרגע הכי חזק בסרטון. מעל 1 מינוס הוא עלול להישמע מעוות ברמקולים מסוימים.</td><td>אותה בקשה לקלוד. הנרמול מטפל גם בזה.</td></tr>
+  </table></div>
+
+  <h3>מתי הסרטון מוכן</h3>
+  <p>כשרשימת התיקונים ריקה, או כשכל מה שנשאר בה הוא דברים שבדקתם והחלטתם להשאיר (שקט מכוון, מעבר רך שהוא חלק מהסגנון). ואז, צפייה אחת שלמה שלכם, מההתחלה עד הסוף, בשביל מה שהכלי לא רואה.</p>
+</section>
+
+<!-- ============ תקלות ============ -->
+<section class="panel" id="t-fix" role="tabpanel" hidden>
+  <h2>תקלות נפוצות</h2>
+  <dl>
+    <dt>קלוד אומר ש eyes או vpc לא נמצאים</dt>
+    <dd>ההתקנה לא הושלמה או שצריך לפתוח את Claude Code מחדש אחרי ההתקנה. סגרו ופתחו. אם זה לא עזר, הדביקו שוב את הודעת ההתקנה מהלשונית "התקנה".</dd>
+
+    <dt>התמלול יצא ג'יבריש או באנגלית</dt>
+    <dd>כנראה הכלי משתמש במודל whisper קטן. בקשו מקלוד: "הרץ eyes setup והראה לי איזה מודל מותקן. אם זה לא large-v3, הורד אותו". או פשוט הוסיפו מפתח ElevenLabs (לשונית "התקנה", "מפתח ElevenLabs"), זו הדרך הבטוחה בעברית.</dd>
+
+    <dt>הבדיקה לוקחת הרבה זמן</dt>
+    <dd>תמלול מקומי של סרטון ארוך במחשב בלי כרטיס מסך חזק יכול לקחת כמו אורך הסרטון ויותר. זה נורמלי. מפתח ElevenLabs מקצר את זה לדקה או שתיים. ובכל מקרה, בדיקה שנייה על אותו קובץ היא מיידית.</dd>
+
+    <dt>"התאמה לתסריט: לא ניתן תסריט"</dt>
+    <dd>קלוד לא מצא את קובץ התסריט. ודאו שפתחתם את Claude Code בתיקיית הפרויקט ושהקובץ נקרא <code>script.md</code>, או ציינו את שם הקובץ במפורש בבקשה.</dd>
+
+    <dt>הדוח אומר שהתסריט לא תואם, אבל אני בטוח שהקלטתי לפי התסריט</dt>
+    <dd>בדקו שקובץ התסריט מכיל רק את טקסט הקריינות, בלי הערות בימוי, כותרות סצנות או תיאורי תמונה. כל טקסט שאינו קריינות ייחשב "בתסריט אבל לא נאמר". אפשר לבקש מקלוד להכין עותק נקי של הקריינות בלבד.</dd>
+
+    <dt>הכלי מדווח על הרבה "מעברים רכים" שאינם מעברים</dt>
+    <dd>בסרטונים עם הרבה תנועת מצלמה איטית זה יכול לקרות. בקשו מקלוד לבדוק אותם בפריימים ולמחוק מהרשימה את מה שאינו מעבר. ספרו לנו על זה, כי זה עוזר לנו לכייל את הכלי.</dd>
+
+    <dt>Windows: ההתקנה של whisper נכשלה</dt>
+    <dd>ב Windows התקנת whisper לפעמים דורשת הורדה ידנית. הדרך הקלה היא לוותר על whisper ולעבוד עם מפתח ElevenLabs. אם בכל זאת רוצים תמלול מקומי, בקשו מקלוד: "הורד את whisper.cpp מעמוד ה releases שלו ב GitHub והוסף אותו ל PATH", והוא ינחה אתכם.</dd>
+
+    <dt>משהו אחר</dt>
+    <dd>העתיקו את הודעת השגיאה המלאה ושלחו בקבוצת הקורס. רוב השגיאות של הכלי מסתיימות במשפט שאומר בדיוק איזו פקודה לתקן.</dd>
+  </dl>
+</section>
+
+<!-- ============ מילון ============ -->
+<section class="panel" id="t-terms" role="tabpanel" hidden>
+  <h2>מילון מונחים</h2>
+  <dl>
+    <dt>Claude Code</dt><dd>תוכנה שבה כותבים לקלוד בשפה חופשית והוא מבצע פעולות במחשב: יוצר קבצים, מריץ כלים, קורא תוצאות. היא רצה בחלון טקסט שנקרא טרמינל.</dd>
+    <dt>טרמינל (Terminal)</dt><dd>חלון טקסט שבו מקלידים פקודות למחשב במקום ללחוץ על כפתורים. ב Mac הוא נקרא Terminal, ב Windows נקרא PowerShell או Terminal. אתם לא צריכים לעבוד בו ישירות, קלוד עושה זאת.</dd>
+    <dt>רנדר (Render)</dt><dd>קובץ הווידאו הסופי שיצא מתוכנת העריכה, אחרי שכל החלקים אוחדו. "לרנדר מחדש" פירושו לייצא שוב אחרי תיקון.</dd>
+    <dt>eyes</dt><dd>כלי קוד פתוח שנותן לקלוד יכולת לחקור סרטון: תמלול, תמונות, חיתוכים, עוצמה. נוצר על ידי מפתח בשם מוריץ קרמב.</dd>
+    <dt>vpc</dt><dd>video publish check, הכלי שלנו. משתמש ב eyes ומחזיר רשימת תיקונים. הקוד שלו פתוח בכתובת github.com/meylon7/video-publish-check.</dd>
+    <dt>סקיל (Skill)</dt><dd>קובץ הוראות שקלוד טוען כשבקשה מסוימת מתאימה לו. הסקיל של הכלי הזה נקרא video-publish-check, והוא מופעל כשמבקשים לבדוק רנדר.</dd>
+    <dt>README</dt><dd>קובץ הסבר שמצורף לכל פרויקט קוד. כשאומרים לקלוד "לפי ה README" הוא קורא את ההוראות שם ומבצע אותן.</dd>
+    <dt>ריפו (Repo)</dt><dd>קיצור של repository, "מאגר": תיקיית פרויקט קוד שמאוחסנת באתר GitHub. הכתובת של ריפו מתחילה ב github.com.</dd>
+    <dt>whisper</dt><dd>תוכנת תמלול חינמית שרצה במחשב. צריכה קובץ מודל. למדויקות בעברית נדרש המודל large-v3.</dd>
+    <dt>מודל (Model)</dt><dd>קובץ הידע שתוכנת תמלול או בינה מלאכותית משתמשת בו. גדול יותר בדרך כלל מדויק יותר ואיטי יותר.</dd>
+    <dt>מפתח API</dt><dd>מחרוזת סודית שמזהה את החשבון שלכם מול שירות מקוון, כמו סיסמה לתוכנות. לא משתפים אותה ולא מעלים אותה לאינטרנט.</dd>
+    <dt>.env</dt><dd>קובץ טקסט מוסתר שמחזיק מפתחות וסודות, שורה אחת לכל מפתח. תוכנות מחפשות אותו בתיקייה שבה הן רצות.</dd>
+    <dt>ffmpeg</dt><dd>תוכנת העזר הנפוצה בעולם לעיבוד וידאו ואודיו. אין לה חלון, היא רצה מאחורי הקלעים.</dd>
+    <dt>תמלול (Transcript)</dt><dd>הטקסט של מה שנאמר בסרטון, עם זמן התחלה וסיום לכל מילה.</dd>
+    <dt>מילים לדקה (WPM)</dt><dd>מדד לקצב דיבור. קריינות נוחה בעברית: 110 עד 160. חדשות ברדיו: סביב 170.</dd>
+    <dt>LUFS</dt><dd>יחידת מדידה לעוצמה כפי שהאוזן תופסת אותה, לאורך כל הסרטון. יוטיוב מכוון ל 14 מינוס. ככל שהמספר שלילי יותר, הסרטון שקט יותר.</dd>
+    <dt>שיא אמיתי (True Peak, dBTP)</dt><dd>הרגע הכי חזק בסרטון. צריך להישאר מתחת ל 1 מינוס כדי שלא יישמע עיוות.</dd>
+    <dt>נרמול (Loudness normalization)</dt><dd>פעולה שמביאה את העוצמה של הסרטון ליעד קבוע, בלי לשנות את התמונה. ffmpeg עושה אותה עם פילטר בשם loudnorm.</dd>
+    <dt>חיתוך (Cut)</dt><dd>מעבר חד בין שני קליפים, מפריים אחד לפריים הבא.</dd>
+    <dt>מעבר רך (Dissolve, Fade)</dt><dd>מעבר שבו תמונה אחת נמסה בהדרגה לתוך השנייה, או לשחור. נמשך בדרך כלל חצי שנייה עד שתי שניות.</dd>
+    <dt>פריים (Frame)</dt><dd>תמונה בודדת מתוך הסרטון. סרטון רגיל מכיל 24 עד 30 פריימים בכל שנייה.</dd>
+    <dt>אינדוקס (Index)</dt><dd>הפעולה שבה eyes מפרק סרטון פעם אחת לכל החלקים שלו ושומר אותם. בפעם השנייה על אותו קובץ הכל מוכן מיד.</dd>
+    <dt>מילון (Glossary)</dt><dd>רשימת שמות שאתם נותנים לכלי כדי שהתמלול יכתוב אותם נכון: שמות מותג, מוצרים, אנשים.</dd>
+    <dt>publish-check.md</dt><dd>קובץ הדוח שהכלי שומר ליד הסרטון. הסיומת md פירושה Markdown, פורמט טקסט פשוט שנפתח בכל עורך.</dd>
+  </dl>
+  <p class="foot">סטודיו אילון · מדריך זה מלווה את הכלי video-publish-check. גרסה ראשונה, אוקטובר 2026.</p>
+</section>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  try {
+    function wire(nav) {
+      var buttons = Array.prototype.slice.call(nav.querySelectorAll('button[data-target]'));
+      var panels = buttons.map(function (b) { return document.getElementById(b.getAttribute('data-target')); });
+      function show(i) {
+        buttons.forEach(function (b, j) { b.setAttribute('aria-selected', j === i ? 'true' : 'false'); });
+        panels.forEach(function (p, j) { if (p) p.hidden = j !== i; });
+      }
+      buttons.forEach(function (b, i) {
+        b.addEventListener('click', function () {
+          show(i);
+          if (nav.classList.contains('tabs')) { window.scrollTo(0, 0); }
+        });
+      });
+      var initial = buttons.findIndex(function (b) { return b.getAttribute('aria-selected') === 'true'; });
+      show(initial < 0 ? 0 : initial);
+    }
+    Array.prototype.forEach.call(document.querySelectorAll('nav.tabs, nav.sub'), wire);
+
+    Array.prototype.forEach.call(document.querySelectorAll('.copy'), function (btn) {
+      btn.addEventListener('click', function () {
+        var box = btn.parentNode;
+        var text = box.textContent.replace(/^(העתקה|הועתק)\s*/, '').trim();
+        function done() { btn.textContent = 'הועתק'; setTimeout(function () { btn.textContent = 'העתקה'; }, 1500); }
+        function fallback() {
+          try {
+            var r = document.createRange(); r.selectNodeContents(box);
+            var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+          } catch (e) {}
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(done, fallback);
+        } else { fallback(); }
+      });
+    });
+  } catch (e) { /* the page is complete without JS */ }
+});
+</script>
